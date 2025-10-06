@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Media Detector</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 50px;
+        }
+        h1 {
+            color: #333;
+        }
+        .upload-container {
+            background: #fff;
+            padding: 20px 30px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        input[type="file"] {
+            margin: 20px 0;
+        }
+        button {
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .result {
+            margin-top: 20px;
+            font-size: 18px;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <h1>AI vs Real Media Detector</h1>
+    <div class="upload-container">
+        <input type="file" id="mediaFile" accept="video/*,image/*">
+        <br>
+        <button onclick="uploadMedia()">Predict</button>
+        <div class="result" id="result"></div>
+    </div>
+
+    <script>
+        function uploadMedia() {
+            const fileInput = document.getElementById('mediaFile');
+            const resultDiv = document.getElementById('result');
+
+            if (fileInput.files.length === 0) {
+                alert("Please select a video or image file first.");
+                return;
+            }
+
+            const file = fileInput.files[0];
+            const formData = new FormData();
+            formData.append("file", file);  // Must match backend key
+
+            resultDiv.innerHTML = "Processing... ⏳";
+
+            fetch("/predict", {
+                method: "POST",
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.error){
+                    resultDiv.innerHTML = `<span style="color:red;">${data.error}</span>`;
+                } else {
+                    resultDiv.innerHTML = `Prediction: <b>${data.label}</b><br>Confidence: <b>${(data.confidence*100).toFixed(2)}%</b>`;
+                }
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                resultDiv.innerHTML = "<span style='color:red;'>Something went wrong!</span>";
+            });
+        }
+    </script>
+</body>
+</html>
